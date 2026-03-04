@@ -1,0 +1,25 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables
+.env
+
+# Distributions / packages
+dist/
+build/
+*.egg-info/
+
+# IDEs
+.vscode/
+.idea/
+
+# Database files
+*.db
+*.sqlite
+
+# Large data files
+github_raw_data.json
+*.csv
+pipeline.log
