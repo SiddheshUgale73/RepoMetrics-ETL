@@ -1,41 +1,68 @@
-# GitHub Data Extraction Pipeline
+# GitStar Analytics: Enterprise GitHub-to-Snowflake Pipeline
 
-A Python project for searching GitHub users and extracting their profile information, repositories, and commits.
+A high-performance Data Engineering pipeline designed to extract massive datasets from the GitHub API, normalize them into a relational schema, and stage them for Cloud Data Warehousing in **Snowflake**.
 
-## Features
-- **GitHub API Integration**: Uses the `requests` library.
-- **Search API**: Find users based on search queries.
-- **Profiling**: Fetch detailed profile data for discovered users.
-- **Repository Listing**: List all public repositories for a user.
-- **Commit History**: Retrieve commit history for specific repositories.
-- **Pagination Handling**: Automatically handles paginated responses from the GitHub API.
-- **Rate Limit Handling**: Detects rate limits and waits (sleeps) until they reset.
-- **Error Handling**: Gracefully handles API errors and network issues.
+## 🚀 Overview
+This project evolves a simple data scraper into a production-grade ETL (Extract, Transform, Load) engine. It is capable of handling hundreds of thousands of records (commits, PRs, repos) and organizing them into a complex 7-table normalized schema optimized for modern analytics.
 
-## Setup
+## 🏗 Architecture & Workflow
 
-1. **Clone or Download** the project.
-2. **Install Dependencies**:
+### 1. Data Extraction (Python)
+The `main.py` orchestrator performs a deep-crawl of the GitHub API.
+- **Resumable ETL**: Automatically resumes from the last processed user if interrupted.
+- **Incremental Saving**: Saves progress after every user to prevent data loss.
+- **Rich Data Scope**: Extracts Profiles, Repositories, Commits (limit 100/repo), and Pull Requests (limit 50/repo).
+
+### 2. Complex Normalization (7 Tables)
+The `normalize_data.py` script transforms nested JSON into a relational structure ready for **Snowflake**.
+- **Schema**:
+  - `USER_TYPES`: Categorizes accounts (User vs Organization).
+  - `USERS`: Detailed contributor profiles.
+  - `LANGUAGES`: Unique programming languages across all repos.
+  - `REPOSITORIES`: Metadata for 12,000+ repositories.
+  - `AUTHORS`: Unique Git authors across 500k+ commits.
+  - `COMMITS`: Transactional commit history.
+  - `PULL_REQUESTS`: Full lifecycle tracking (Open/Closed/Merged).
+
+### 3. Snowflake Integration
+The project includes a ready-to-use **`snowflake_ddl.sql`** script to set up your cloud data warehouse in seconds.
+
+## 🛠 Setup & Usage
+
+### Prerequisites
+- Python 3.8+
+- GitHub Personal Access Token (PAT)
+- Snowflake Account
+
+### Installation
+1. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-3. **Configure Environment**:
-   - Rename `.env.example` to `.env`.
-   - Update `GITHUB_TOKEN` in the `.env` file with your GitHub Personal Access Token.
-     [Create a token here](https://github.com/settings/tokens).
+2. Configure your `.env` file:
+   ```env
+   GITHUB_TOKEN=your_token_here
+   ```
 
-## Usage
+### Running the Pipeline
+1. **Extract Raw Data**:
+   ```bash
+   python main.py
+   ```
+2. **Normalize for Snowflake**:
+   ```bash
+   python normalize_data.py
+   ```
+3. **Load to Snowflake**:
+   - Run the SQL in `snowflake_ddl.sql` in your Snowflake worksheet.
+   - Use the Snowflake Web UI or SnowSQL to upload the generated CSV files.
 
-Run the extraction pipeline:
-```bash
-python main.py <username-query>
-```
-Example:
-```bash
-python main.py "octocat"
-```
+## 📁 Project Structure
+- `main.py`: The ETL Orchestrator.
+- `normalize_data.py`: The Transformation Engine.
+- `pipeline/`: Core GitHub API client package.
+- `snowflake_ddl.sql`: Snowflake table definitions.
+- `config.py`: Global settings and file paths.
 
-## Structure
-- `pipeline/client.py`: Core `GitHubClient` class for API interactions.
-- `main.py`: Entry point for searching and extracting data.
-- `.env`: (Private) Stores your GitHub token.
+---
+**Build your strong analytics engine with GitStar Analytics!**
