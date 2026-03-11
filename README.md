@@ -24,6 +24,33 @@ The `normalize_data.py` script transforms nested JSON into a relational structur
   - `COMMITS`: Transactional commit history.
   - `PULL_REQUESTS`: Full lifecycle tracking (Open/Closed/Merged).
 
+### 📊 Power BI Visualization
+The final step of the pipeline is data visualization using **Power BI**. 
+
+### 1. Connecting to Snowflake
+1.  **Open Power BI Desktop**.
+2.  Click on **Get Data** > **Database** > **Snowflake**.
+3.  **Server**: Enter your Snowflake account URL.
+4.  **Warehouse**: Specify your Snowflake warehouse name (e.g., `COMPUTE_WH`).
+5.  **Authentication**: Select **Database** and enter your Snowflake credentials.
+6.  **Navigator**: Select the tables created by `snowflake_ddl.sql` (USERS, REPOSITORIES, COMMITS, etc.).
+
+### 2. Data Modeling & DAX Measures
+Create a **Star Schema** in the Model view and add these key measures:
+- **Total Repositories**: `COUNTROWS('REPOSITORIES')`
+- **Avg Stars per Repo**: `AVERAGE('REPOSITORIES'[STAR_COUNT])`
+- **Total Commits**: `COUNTROWS('COMMITS')`
+- **Total Contributors**: `DISTINCTCOUNT('COMMITS'[AUTHOR_ID])`
+
+### 3. Suggested Insights
+| Metric | Suggested Visual |
+| :--- | :--- |
+| **Top Languages by Star Count** | Treemap or Bar Chart |
+| **Commits Over Time** | Line Chart or Area Chart |
+| **Language Popularity** | Pie Chart or Donut Chart |
+| **Repository Size vs Stars** | Scatter Plot |
+| **Contributor Activity** | Clustered Column Chart |
+
 ### 3. Snowflake Integration
 The project includes a ready-to-use **`snowflake_ddl.sql`** script to set up your cloud data warehouse in seconds.
 
