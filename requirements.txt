@@ -1,4 +1,9 @@
 requests
 python-dotenv
 urllib3
-snowflake-connector-python
+snowflake-connector-python[pandas]
+scikit-learn
+pandas
+joblib
+streamlit
+matplotlib

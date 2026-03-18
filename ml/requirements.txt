@@ -1,5 +1,0 @@
-scikit-learn
-pandas
-joblib
-snowflake-connector-python[pandas]
-python-dotenv

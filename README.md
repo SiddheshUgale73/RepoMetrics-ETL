@@ -24,6 +24,18 @@ The `normalize_data.py` script transforms nested JSON into a relational structur
   - `COMMITS`: Transactional commit history.
   - `PULL_REQUESTS`: Full lifecycle tracking (Open/Closed/Merged).
 
+### 3. Automated Cloud Data Warehousing
+The `load_to_snowflake.py` script automatically creates the DDL schema and pushes all 500,000+ extracted rows into a live Snowflake cloud database using secure Python connectors.
+
+### 4. Enterprise Machine Learning Suite (`ml/`)
+We utilize the Snowflake data to train predictive Python models that provide actionable insights to Engineering Managers:
+1. **Developer Burnout Predictor:** An Isolation Forest model that flags developers at high flight-risk based on late-night and weekend commit anomalies.
+2. **PR Merge Estimator:** A Random Forest Regressor that predicts how many days a new Pull Request will take to merge.
+3. **Repository Health Scorer:** A K-Means clustering algorithm that grades all 12,000+ repositories from A (Healthy) to F (Abandoned) based on bus factor and maintenance activity.
+
+### 5. Interactive Web Dashboard (`dashboard/`)
+A live **Streamlit** application that allows users to interact with the ML predictions, search for repository health grades, and simulate PR merges in a beautiful UI.
+
 ### 📊 Power BI Visualization
 The final step of the pipeline is data visualization using **Power BI**. 
 
@@ -81,12 +93,28 @@ The project includes a ready-to-use **`snowflake_ddl.sql`** script to set up you
    python normalize_data.py
    ```
 3. **Load to Snowflake**:
-   - Run the SQL in `snowflake_ddl.sql` in your Snowflake worksheet.
-   - Use the Snowflake Web UI or SnowSQL to upload the generated CSV files.
+   ```bash
+   python load_to_snowflake.py
+   ```
+   *(Ensure `SNOWFLAKE_USER`, `SNOWFLAKE_ACCOUNT`, and `SNOWFLAKE_PASSWORD` are set in your `.env`)*
+4. **Train the Machine Learning Suite**:
+   ```bash
+   cd ml
+   python train_suite.py
+   cd ..
+   ```
 
+5. **Launch the Analytics Web Dashboard**:
+   ```bash
+   cd dashboard
+   streamlit run app.py
+   ```
 ## 📁 Project Structure
-- `main.py`: The ETL Orchestrator.
+- `main.py`: The GitHub API ETL Orchestrator.
 - `normalize_data.py`: The Transformation Engine.
+- `load_to_snowflake.py`: Automated Cloud Database uploader.
+- `ml/`: Enterprise Machine Learning Models (Burnout, PRs, Repo Health).
+- `dashboard/`: Streamlit Web Application for ML Visualization.
 - `pipeline/`: Core GitHub API client package.
 - `snowflake_ddl.sql`: Snowflake table definitions.
 - `config.py`: Global settings and file paths.
