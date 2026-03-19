@@ -15,7 +15,68 @@ The `main.py` orchestrator performs a deep-crawl of the GitHub API.
 
 ### 2. Complex Normalization (7 Tables)
 The `normalize_data.py` script transforms nested JSON into a relational structure ready for **Snowflake**.
-- **Schema**:
+
+#### 📊 Database Schema (ER Diagram)
+```mermaid
+erDiagram
+    USER_TYPES ||--o{ USERS : "categorizes"
+    USERS ||--o{ REPOSITORIES : "owns"
+    LANGUAGES ||--o{ REPOSITORIES : "defines"
+    REPOSITORIES ||--o{ COMMITS : "contains"
+    AUTHORS ||--o{ COMMITS : "authored"
+    REPOSITORIES ||--o{ PULL_REQUESTS : "contains"
+
+    USER_TYPES {
+        int id PK
+        string type_name
+    }
+    USERS {
+        int id PK
+        string login
+        string name
+        int type_id FK
+        int public_repos
+        int followers
+        int following
+        timestamp created_at
+    }
+    LANGUAGES {
+        int id PK
+        string name
+    }
+    REPOSITORIES {
+        int id PK
+        string name
+        int language_id FK
+        int stargazers_count
+        int forks_count
+        timestamp created_at
+        timestamp updated_at
+        int owner_id FK
+    }
+    AUTHORS {
+        int id PK
+        string name
+    }
+    COMMITS {
+        string sha PK
+        int repository_id FK
+        int author_id FK
+        timestamp commit_date
+    }
+    PULL_REQUESTS {
+        int pr_id PK
+        int repository_id FK
+        int pr_number
+        string title
+        string state
+        string author_login
+        timestamp created_at
+        timestamp merged_at
+    }
+```
+
+- **Schema Tables**:
   - `USER_TYPES`: Categorizes accounts (User vs Organization).
   - `USERS`: Detailed contributor profiles.
   - `LANGUAGES`: Unique programming languages across all repos.
