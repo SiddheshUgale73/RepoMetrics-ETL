@@ -5,12 +5,18 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("Engineering_Analytics_Suite")
 
+import os
+
 def run_script(script_name):
     logger.info(f"--- Training {script_name} ---")
+    # Get the directory of the current script (train_suite.py)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    script_path = os.path.join(script_dir, script_name)
+    
     try:
         # Run the script as a subprocess
         result = subprocess.run(
-            [sys.executable, script_name], 
+            [sys.executable, script_path], 
             check=True,
             capture_output=True,
             text=True
@@ -27,7 +33,8 @@ def main():
     scripts = [
         "predict_burnout.py",
         "predict_pr_merge.py",
-        "repo_health_score.py"
+        "repo_health_score.py",
+        "advanced_analytics.py"
     ]
     
     for script in scripts:

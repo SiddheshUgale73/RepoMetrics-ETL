@@ -12,12 +12,13 @@ ML_DIR = os.path.join(os.path.dirname(__file__), '..', 'ml')
 repo_rankings_path = os.path.join(ML_DIR, 'repo_health_rankings.csv')
 burnout_report_path = os.path.join(ML_DIR, 'burnout_risk_report.csv')
 pr_model_path = os.path.join(ML_DIR, 'pr_bottleneck_model.joblib')
+advanced_insights_path = os.path.join(ML_DIR, 'advanced_insights.csv')
 
 st.title("🌟 GitStar Enterprise Analytics")
 st.markdown("### Powered by Snowflake & Machine Learning")
 
-# Create 3 Tabs for our 3 ML Models
-tab1, tab2, tab3 = st.tabs(["🏗️ Repository Health", "🔥 Developer Burnout Risk", "⏳ PR Merge Predictor"])
+# Create 4 Tabs for our ML Models
+tab1, tab2, tab3, tab4 = st.tabs(["🏗️ Repository Health", "🔥 Developer Burnout Risk", "⏳ PR Merge Predictor", "📊 Strategic Insights"])
 
 # ==========================================
 # TAB 1: Repository Health Scoring
@@ -121,3 +122,55 @@ with tab3:
             st.error(f"Failed to load PR Model: {e}")
     else:
         st.error("⚠️ PR Predictor model not found (Not enough training data in Snowflake perhaps?).")
+
+# ==========================================
+# TAB 4: Strategic Repository Insights
+# ==========================================
+with tab4:
+    st.header("📊 Strategic Repository Insights")
+    st.markdown("Advanced metrics for engineering leaders to identify technical debt, team silos, and project momentum.")
+    
+    if os.path.exists(advanced_insights_path):
+        adv_df = pd.read_csv(advanced_insights_path)
+        
+        # High level summary metrics
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Avg Bus Factor", round(adv_df['BUS_FACTOR'].mean(), 1))
+        m2.metric("Stale Repos (>30d)", len(adv_df[adv_df['STALENESS'] > 30]))
+        m3.metric("Avg Project Velocity", f"{adv_df['VELOCITY'].mean():.1f} commits/wk")
+        
+        st.divider()
+        
+        col_left, col_right = st.columns([2, 1])
+        
+        with col_left:
+            st.subheader("Repository Risk Matrix")
+            st.dataframe(adv_df[['NAME', 'BUS_FACTOR', 'VELOCITY', 'STALENESS', 'TOP_CONTRIBUTOR_CONCENTRATION']], use_container_width=True)
+            
+        with col_right:
+            st.subheader("⚠️ High Risk Watchlist")
+            # Filter for "At Risk" repos: Bus Factor < 2 or Staleness > 60
+            at_risk = adv_df[(adv_df['BUS_FACTOR'] <= 1) | (adv_df['STALENESS'] > 60)]
+            if not at_risk.empty:
+                for _, row in at_risk.iterrows():
+                    reason = []
+                    if row['BUS_FACTOR'] <= 1: reason.append("Low Bus Factor (Silo)")
+                    if row['STALENESS'] > 60: reason.append("Stale (>60 days)")
+                    st.error(f"**{row['NAME']}**\n- {', '.join(reason)}")
+            else:
+                st.success("No critical risks detected in current repositories.")
+                
+        # Risk Heatmap
+        st.subheader("Maintenance Risk: Staleness vs Concentration")
+        fig, ax = plt.subplots(figsize=(10, 5))
+        scatter = ax.scatter(adv_df['STALENESS'], adv_df['TOP_CONTRIBUTOR_CONCENTRATION'], 
+                           s=adv_df['BUS_FACTOR']*100, alpha=0.5, c=adv_df['VELOCITY'], cmap='viridis')
+        ax.set_xlabel("Days Since Last Commit (Staleness)")
+        ax.set_ylabel("Top Contributor Concentration (%)")
+        plt.colorbar(scatter, label='Commit Velocity')
+        st.pyplot(fig)
+        st.caption("Circle size represents Bus Factor. Color represents velocity (commits/week).")
+        
+    else:
+        st.error("⚠️ Advanced Insights data not found. Please run the ML pipeline first.")
+
