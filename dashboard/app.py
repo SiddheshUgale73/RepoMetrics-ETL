@@ -14,7 +14,7 @@ burnout_report_path = os.path.join(ML_DIR, 'student_fatigue_report.csv')
 pr_model_path = os.path.join(ML_DIR, 'pr_bottleneck_model.joblib')
 advanced_insights_path = os.path.join(ML_DIR, 'advanced_insights.csv')
 
-st.title("🎓 Academic Project & Research Monitoring")
+st.title("🎓 Github Students Insights")
 st.markdown("### Mentorship Support System via Snowflake & AI")
 
 # Create 4 Tabs for our ML Models

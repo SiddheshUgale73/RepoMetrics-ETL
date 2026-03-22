@@ -1,4 +1,4 @@
-# 🎓 Final Year Project Report: AI-Driven Repository Analytics & Insights Engine
+# 🎓 Github Students Insights: AI-Driven Academic Project Monitoring System
 
 **Project Context**: Academic Project Management & Monitoring Suite  
 **Objective**: To provide mentors with real-time, AI-driven visibility into student project health and team dynamics.

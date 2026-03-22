@@ -1,9 +1,9 @@
-# GitStar Analytics: Enterprise GitHub-to-Snowflake Pipeline
+# Github Students Insights: AI-Powered Academic Project Monitoring
 
-A high-performance Data Engineering pipeline designed to extract massive datasets from the GitHub API, normalize them into a relational schema, and stage them for Cloud Data Warehousing in **Snowflake**.
+A high-performance Data Engineering pipeline designed to help **Mentors and Guides** track student project progress by extracting data from GitHub, normalizing it in **Snowflake**, and applying **AI models** to detect fatigue and project momentum.
 
 ## 🚀 Overview
-This project evolves a simple data scraper into a production-grade ETL (Extract, Transform, Load) engine. It is capable of handling hundreds of thousands of records (commits, PRs, repos) and organizing them into a complex 7-table normalized schema optimized for modern analytics.
+This project provides a comprehensive overview of student activity across hundreds of repositories. It uses advanced analytics to turn raw git metadata into actionable insights for academic evaluation (300-mark college projects).
 
 ## 🏗 Architecture & Workflow
 
@@ -88,14 +88,14 @@ erDiagram
 ### 3. Automated Cloud Data Warehousing
 The `load_to_snowflake.py` script automatically creates the DDL schema and pushes all 500,000+ extracted rows into a live Snowflake cloud database using secure Python connectors.
 
-### 4. Enterprise Machine Learning Suite (`ml/`)
-We utilize the Snowflake data to train predictive Python models that provide actionable insights to Engineering Managers:
-1. **Developer Burnout Predictor:** An Isolation Forest model that flags developers at high flight-risk based on late-night and weekend commit anomalies.
-2. **PR Merge Estimator:** A Random Forest Regressor that predicts how many days a new Pull Request will take to merge.
-3. **Repository Health Scorer:** A K-Means clustering algorithm that grades all 12,000+ repositories from A (Healthy) to F (Abandoned) based on bus factor and maintenance activity.
+### 4. Machine Learning for Academic Monitoring (`ml/`)
+We utilize the Snowflake data to train predictive Python models that provide actionable insights to Mentors:
+1. **Student Fatigue Predictor:** An Isolation Forest model that flags students at risk of overwork based on late-night and weekend commit patterns.
+2. **Submission Timeline Predictor:** A Random Forest Regressor that predicts how long it takes for a student's submission (PR) to be reviewed.
+3. **Project Progress Scorer:** A K-Means clustering algorithm that grades projects from A (Excellent Progress) to F (Stalled) based on activity and consistency.
 
-### 5. Interactive Web Dashboard (`dashboard/`)
-A live **Streamlit** application that allows users to interact with the ML predictions, search for repository health grades, and simulate PR merges in a beautiful UI.
+### 5. Mentor Dashboard (`dashboard/`)
+A live **Streamlit** application designed for Guides to monitor student progress, check fatigue alerts, and view strategic project insights.
 
 ### 📊 Power BI Visualization
 The final step of the pipeline is data visualization using **Power BI**. 
@@ -181,4 +181,4 @@ The project includes a ready-to-use **`snowflake_ddl.sql`** script to set up you
 - `config.py`: Global settings and file paths.
 
 ---
-**Build your strong analytics engine with GitStar Analytics!**
+**Monitor and guide your students effectively with Github Students Insights!**
