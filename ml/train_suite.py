@@ -3,12 +3,12 @@ import subprocess
 import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger("Engineering_Analytics_Suite")
+logger = logging.getLogger("Mentor_Support_Suite")
 
 import os
 
 def run_script(script_name):
-    logger.info(f"--- Training {script_name} ---")
+    logger.info(f"--- Generating Insights for {script_name} ---")
     # Get the directory of the current script (train_suite.py)
     script_dir = os.path.dirname(os.path.abspath(__file__))
     script_path = os.path.join(script_dir, script_name)
@@ -27,7 +27,7 @@ def run_script(script_name):
 
 def main():
     logger.info("=====================================================")
-    logger.info("= Initiating Engineering Analytics ML Training Suite =")
+    logger.info("= Initiating Academic Analytics Training Suite for Mentors =")
     logger.info("=====================================================")
     
     scripts = [

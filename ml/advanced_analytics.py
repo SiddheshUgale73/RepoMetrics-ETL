@@ -5,7 +5,7 @@ from datetime import datetime
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger("Advanced_Analytics")
+logger = logging.getLogger("MentorInsights")
 
 # Paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -15,10 +15,9 @@ REPOS_CSV = os.path.join(DATA_DIR, 'repositories.csv')
 AUTHORS_CSV = os.path.join(DATA_DIR, 'authors.csv')
 OUTPUT_CSV = os.path.join(BASE_DIR, 'advanced_insights.csv')
 
-def calculate_bus_factor(commit_counts):
+def calculate_collaboration_score(commit_counts):
     """
-    Number of contributors whose cumulative share of commits is > 50%.
-    Simplified version of the Bus Factor.
+    Measures team participation. Higher scores mean work is distributed.
     """
     total_commits = commit_counts.sum()
     if total_commits == 0:
@@ -28,11 +27,11 @@ def calculate_bus_factor(commit_counts):
     cumulative_share = sorted_counts.cumsum() / total_commits
     
     # The number of people it takes to reach > 50%
-    bus_factor = (cumulative_share <= 0.50).sum() + 1
-    return bus_factor
+    collaboration_score = (cumulative_share <= 0.50).sum() + 1
+    return collaboration_score
 
 def generate_insights():
-    logger.info("Starting Advanced Analytics generation...")
+    logger.info("Starting Advanced Mentor Analytics generation...")
     
     if not all(os.path.exists(f) for f in [COMMITS_CSV, REPOS_CSV, AUTHORS_CSV]):
         logger.error("Missing required CSV files.")
@@ -56,19 +55,19 @@ def generate_insights():
         
         if repo_commits.empty:
             insights.append({
-                'REPO_ID': repo_id,
+                'PROJECT_ID': repo_id,
                 'NAME': repo_name,
-                'BUS_FACTOR': 0,
+                'COLLABORATION_SCORE': 0,
                 'VELOCITY': 0,
-                'STALENESS': (datetime.now() - pd.to_datetime(repo['updated_at']).tz_localize(None)).days,
-                'TOP_CONTRIBUTOR_CONCENTRATION': 0,
-                'ACTIVE_AUTHORS': 0
+                'INACTIVITY_DAYS': (datetime.now() - pd.to_datetime(repo['updated_at']).tz_localize(None)).days,
+                'DEPENDENCE_ON_TOP_STUDENT': 0,
+                'ACTIVE_STUDENTS': 0
             })
             continue
             
-        # 1. Bus Factor & Concentration
+        # 1. Participation & Ownership
         author_commit_counts = repo_commits['author_id'].value_counts()
-        bus_factor = calculate_bus_factor(author_commit_counts)
+        collab_score = calculate_collaboration_score(author_commit_counts)
         top_contrib_pct = (author_commit_counts.iloc[0] / author_commit_counts.sum()) * 100 if not author_commit_counts.empty else 0
         
         # 2. Project Velocity (Commits per week)
@@ -78,23 +77,23 @@ def generate_insights():
         if duration_weeks < 1: duration_weeks = 1
         velocity = len(repo_commits) / duration_weeks
         
-        # 3. Staleness (Days since last commit)
-        staleness = (datetime.now().replace(tzinfo=None) - last_commit.replace(tzinfo=None)).days
+        # 3. Inactivity (Days since last student update)
+        inactivity_days = (datetime.now().replace(tzinfo=None) - last_commit.replace(tzinfo=None)).days
         
         insights.append({
-            'REPO_ID': repo_id,
+            'PROJECT_ID': repo_id,
             'NAME': repo_name,
-            'BUS_FACTOR': bus_factor,
+            'COLLABORATION_SCORE': collab_score,
             'VELOCITY': round(velocity, 2),
-            'STALENESS': staleness,
-            'TOP_CONTRIBUTOR_CONCENTRATION': round(top_contrib_pct, 2),
-            'ACTIVE_AUTHORS': len(author_commit_counts)
+            'INACTIVITY_DAYS': inactivity_days,
+            'DEPENDENCE_ON_TOP_STUDENT': round(top_contrib_pct, 2),
+            'ACTIVE_STUDENTS': len(author_commit_counts)
         })
 
     # Save to CSV
     df_insights = pd.DataFrame(insights)
     df_insights.to_csv(OUTPUT_CSV, index=False)
-    logger.info(f"Advanced insights saved to {OUTPUT_CSV}")
+    logger.info(f"Mentor strategic insights saved to {OUTPUT_CSV}")
 
 if __name__ == "__main__":
     generate_insights()

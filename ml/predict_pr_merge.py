@@ -12,7 +12,7 @@ import joblib
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger("PR_Predictor")
+logger = logging.getLogger("SubmissionPredictor")
 
 def get_snowflake_connection():
     sf_user = os.getenv('SNOWFLAKE_USER')
@@ -26,7 +26,7 @@ def get_snowflake_connection():
     )
 
 def extract_pr_data(conn):
-    logger.info("Extracting merged PR data from Snowflake...")
+    logger.info("Extracting submission history from Snowflake...")
     # Only pull merged PRs to train the predictive model
     query = """
         SELECT 
@@ -51,12 +51,12 @@ def feature_engineering(df):
     df['CREATED_AT'] = pd.to_datetime(df['CREATED_AT'], utc=True)
     df['MERGED_AT'] = pd.to_datetime(df['MERGED_AT'], utc=True)
     
-    # Target Variable: Days to merge
-    df['days_to_merge'] = (df['MERGED_AT'] - df['CREATED_AT']).dt.total_seconds() / (24 * 3600)
+    # Target Variable: Days to review
+    df['days_to_review'] = (df['MERGED_AT'] - df['CREATED_AT']).dt.total_seconds() / (24 * 3600)
     
     # Filter out bizarrely long (e.g. 5 year) PRs which are outliers
-    df = df[df['days_to_merge'] < 365] 
-    df = df[df['days_to_merge'] > 0] 
+    df = df[df['days_to_review'] < 365] 
+    df = df[df['days_to_review'] > 0] 
 
     # Predictors: 
     df['title_length'] = df['TITLE'].str.len().fillna(0)
@@ -71,11 +71,11 @@ def feature_engineering(df):
     return df
 
 def train_pr_model(df):
-    logger.info("Training Random Forest Regressor to predict PR bottleneck duration...")
+    logger.info("Training Random Forest Regressor to predict submission review duration...")
     features = ['title_length', 'created_hour', 'created_day_of_week', 'author_experience']
     
     X = df[features].fillna(0)
-    y = df['days_to_merge']
+    y = df['days_to_review']
     
     # Needs at least some PRs to train
     if len(X) < 10:
@@ -94,7 +94,7 @@ def train_pr_model(df):
     return model, df
 
 def main():
-    logger.info("=== Starting PR Merge Bottleneck Predictor ===")
+    logger.info("=== Starting Student Submission Predictor ===")
     conn = None
     try:
         conn = get_snowflake_connection()

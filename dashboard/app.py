@@ -5,38 +5,38 @@ import os
 import matplotlib.pyplot as plt
 
 # Page Config
-st.set_page_config(page_title="GitStar Analytics AI", page_icon="🚀", layout="wide")
+st.set_page_config(page_title="Academic Project Mentor", page_icon="🎓", layout="wide")
 
 # Paths to the ML artifacts we generated in Step 2
 ML_DIR = os.path.join(os.path.dirname(__file__), '..', 'ml')
-repo_rankings_path = os.path.join(ML_DIR, 'repo_health_rankings.csv')
-burnout_report_path = os.path.join(ML_DIR, 'burnout_risk_report.csv')
+repo_rankings_path = os.path.join(ML_DIR, 'project_progress_report.csv')
+burnout_report_path = os.path.join(ML_DIR, 'student_fatigue_report.csv')
 pr_model_path = os.path.join(ML_DIR, 'pr_bottleneck_model.joblib')
 advanced_insights_path = os.path.join(ML_DIR, 'advanced_insights.csv')
 
-st.title("🌟 GitStar Enterprise Analytics")
-st.markdown("### Powered by Snowflake & Machine Learning")
+st.title("🎓 Academic Project & Research Monitoring")
+st.markdown("### Mentorship Support System via Snowflake & AI")
 
 # Create 4 Tabs for our ML Models
-tab1, tab2, tab3, tab4 = st.tabs(["🏗️ Repository Health", "🔥 Developer Burnout Risk", "⏳ PR Merge Predictor", "📊 Strategic Insights"])
+tab1, tab2, tab3, tab4 = st.tabs(["🏗️ Project Progress", "🔥 Student Fatigue Alert", "⏳ Submission Timeline Predictor", "📊 Mentor Strategy Insights"])
 
 # ==========================================
 # TAB 1: Repository Health Scoring
 # ==========================================
 with tab1:
-    st.header("Overall Repository Health Grades")
-    st.markdown("Repositories are graded from A (Healthy) to F (Abandoned) using K-Means Clustering based on commit frequency, bus factor, and days since last active.")
+    st.header("Daily Project Progress Grades")
+    st.markdown("Projects are graded from A (Excellent) to F (Stalled) using machine learning based on commit frequency and team consistency.")
     
     if os.path.exists(repo_rankings_path):
         repo_df = pd.read_csv(repo_rankings_path)
         
         # High level metrics
         col1, col2, col3 = st.columns(3)
-        col1.metric("Total Repos Graded", len(repo_df))
-        healthy_count = len(repo_df[repo_df['health_grade'].str.contains('A')])
-        col2.metric("A-Grade (Healthy) Repos", healthy_count)
-        failing_count = len(repo_df[repo_df['health_grade'].str.contains('D/F')])
-        col3.metric("Failing/Abandoned Repos", failing_count)
+        col1.metric("Active Student Projects", len(repo_df))
+        healthy_count = len(repo_df[repo_df['status_grade'].str.contains('A')])
+        col2.metric("Excellent Progress Projects", healthy_count)
+        failing_count = len(repo_df[repo_df['status_grade'].str.contains('D/F')])
+        col3.metric("Stalled Projects", failing_count)
         
         st.divider()
         
@@ -56,13 +56,13 @@ with tab1:
 # TAB 2: Developer Burnout Risk
 # ==========================================
 with tab2:
-    st.header("Developer Flight Risk & Burnout Detection")
-    st.markdown("Highlights core contributors exhibiting dangerous work patterns (high weekend/late-night commit ratios) using an Isolation Forest Anomaly Detector.")
+    st.header("Student Fatigue & Overwork Detection")
+    st.markdown("Highlights students with irregular work patterns (late-night or marathon coding sessions) who may need mentor support.")
     
     if os.path.exists(burnout_report_path):
         burnout_df = pd.read_csv(burnout_report_path)
         
-        st.warning(f"🚨 ALERT: {len(burnout_df)} Developers have been flagged as HIGH RISK for burnout.")
+        st.error(f"🚨 ALERT: {len(burnout_df)} Students identified as requiring MENTOR ATTENTION.")
         
         st.dataframe(burnout_df[['AUTHOR_NAME', 'total_commits', 'weekend_ratio', 'late_night_ratio', 'commits_per_day']], use_container_width=True)
         
@@ -80,8 +80,8 @@ with tab2:
 # TAB 3: PR Bottleneck Predictor
 # ==========================================
 with tab3:
-    st.header("Pull Request Merge Time Estimator")
-    st.markdown("Predicts how many days a new Pull Request will take to merge based on our Random Forest Regressor.")
+    st.header("Task Submission Timeline Predictor")
+    st.markdown("Predicts how long it will take for a student's PR (Pull Request) to be reviewed and merged by the Guide.")
     
     if os.path.exists(pr_model_path):
         try:
@@ -113,7 +113,7 @@ with tab3:
                     
                     prediction = pr_model.predict(input_data)[0]
                     
-                    st.success(f"**Estimated Time to Merge:** {prediction:.1f} Days ⏱️")
+                    st.success(f"**Predicted Review Time:** {prediction:.1f} Days ⏱️")
                     
                     if prediction > 14:
                         st.warning("This PR is predicted to become a bottleneck. Assign more reviewers!")
@@ -127,49 +127,49 @@ with tab3:
 # TAB 4: Strategic Repository Insights
 # ==========================================
 with tab4:
-    st.header("📊 Strategic Repository Insights")
-    st.markdown("Advanced metrics for engineering leaders to identify technical debt, team silos, and project momentum.")
+    st.header("📊 Mentor's Strategic Project Insights")
+    st.markdown("Broad metrics for mentors to identify team imbalances and overall research momentum.")
     
     if os.path.exists(advanced_insights_path):
         adv_df = pd.read_csv(advanced_insights_path)
         
         # High level summary metrics
         m1, m2, m3 = st.columns(3)
-        m1.metric("Avg Bus Factor", round(adv_df['BUS_FACTOR'].mean(), 1))
-        m2.metric("Stale Repos (>30d)", len(adv_df[adv_df['STALENESS'] > 30]))
-        m3.metric("Avg Project Velocity", f"{adv_df['VELOCITY'].mean():.1f} commits/wk")
+        m1.metric("Avg Collaboration Score", round(adv_df['COLLABORATION_SCORE'].mean(), 1))
+        m2.metric("Stalled Projects (>30d)", len(adv_df[adv_df['INACTIVITY_DAYS'] > 30]))
+        m3.metric("Avg Student Velocity", f"{adv_df['VELOCITY'].mean():.1f} updates/wk")
         
         st.divider()
         
         col_left, col_right = st.columns([2, 1])
         
         with col_left:
-            st.subheader("Repository Risk Matrix")
-            st.dataframe(adv_df[['NAME', 'BUS_FACTOR', 'VELOCITY', 'STALENESS', 'TOP_CONTRIBUTOR_CONCENTRATION']], use_container_width=True)
+            st.subheader("Project Activity Matrix")
+            st.dataframe(adv_df[['NAME', 'COLLABORATION_SCORE', 'VELOCITY', 'INACTIVITY_DAYS', 'DEPENDENCE_ON_TOP_STUDENT']], use_container_width=True)
             
         with col_right:
             st.subheader("⚠️ High Risk Watchlist")
-            # Filter for "At Risk" repos: Bus Factor < 2 or Staleness > 60
-            at_risk = adv_df[(adv_df['BUS_FACTOR'] <= 1) | (adv_df['STALENESS'] > 60)]
+            # Filter for "At Risk" projects: Collaboration < 2 or Inactivity > 60
+            at_risk = adv_df[(adv_df['COLLABORATION_SCORE'] <= 1) | (adv_df['INACTIVITY_DAYS'] > 60)]
             if not at_risk.empty:
                 for _, row in at_risk.iterrows():
                     reason = []
-                    if row['BUS_FACTOR'] <= 1: reason.append("Low Bus Factor (Silo)")
-                    if row['STALENESS'] > 60: reason.append("Stale (>60 days)")
+                    if row['COLLABORATION_SCORE'] <= 1: reason.append("Low Collaboration (Siloed)")
+                    if row['INACTIVITY_DAYS'] > 60: reason.append("Inactive (>60 days)")
                     st.error(f"**{row['NAME']}**\n- {', '.join(reason)}")
             else:
                 st.success("No critical risks detected in current repositories.")
                 
         # Risk Heatmap
-        st.subheader("Maintenance Risk: Staleness vs Concentration")
+        st.subheader("Participation Risk: Inactivity vs Student Dependence")
         fig, ax = plt.subplots(figsize=(10, 5))
-        scatter = ax.scatter(adv_df['STALENESS'], adv_df['TOP_CONTRIBUTOR_CONCENTRATION'], 
-                           s=adv_df['BUS_FACTOR']*100, alpha=0.5, c=adv_df['VELOCITY'], cmap='viridis')
-        ax.set_xlabel("Days Since Last Commit (Staleness)")
-        ax.set_ylabel("Top Contributor Concentration (%)")
-        plt.colorbar(scatter, label='Commit Velocity')
+        scatter = ax.scatter(adv_df['INACTIVITY_DAYS'], adv_df['DEPENDENCE_ON_TOP_STUDENT'], 
+                           s=adv_df['COLLABORATION_SCORE']*100, alpha=0.5, c=adv_df['VELOCITY'], cmap='viridis')
+        ax.set_xlabel("Days Since Last Update (Inactivity)")
+        ax.set_ylabel("Dependence on Leader (%)")
+        plt.colorbar(scatter, label='Update Velocity')
         st.pyplot(fig)
-        st.caption("Circle size represents Bus Factor. Color represents velocity (commits/week).")
+        st.caption("Circle size represents Collaboration Level. Color represents update frequency.")
         
     else:
         st.error("⚠️ Advanced Insights data not found. Please run the ML pipeline first.")

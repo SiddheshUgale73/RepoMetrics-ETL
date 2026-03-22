@@ -12,7 +12,7 @@ import joblib
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger("BurnoutPredictor")
+logger = logging.getLogger("StudentActivityPredictor")
 
 def get_snowflake_connection():
     sf_user = os.getenv('SNOWFLAKE_USER')
@@ -54,7 +54,7 @@ def extract_commit_data(conn):
 
 def feature_engineering(df):
     """Convert raw commits into developer-level behavioral features."""
-    logger.info("Engineering burnout risk features...")
+    logger.info("Engineering student fatigue risk features...")
     
     # Ensure datetime format
     df['COMMIT_DATE'] = pd.to_datetime(df['COMMIT_DATE'], utc=True)
@@ -97,7 +97,7 @@ def train_burnout_model(features_df):
     """Use Unsupervised Learning (Isolation Forest) to find overworked anomalies."""
     logger.info("Training Isolation Forest Anomaly Detector...")
     
-    # Features indicative of overwork / burnout
+    # Features indicative of overwork / student fatigue
     X = features_df[['weekend_ratio', 'late_night_ratio', 'commits_per_day']]
     
     # We assume roughly 5% of top contributors are at high burnout risk
@@ -106,18 +106,18 @@ def train_burnout_model(features_df):
     # Fit and Predict (-1 for anomaly/burnout risk, 1 for normal)
     predictions = model.fit_predict(X)
     
-    features_df['burnout_risk'] = predictions
-    # Convert to boolean flag
-    features_df['is_high_risk'] = features_df['burnout_risk'] == -1
+    features_df['fatigue_score'] = predictions
+    # Convert to boolean flag for mentors
+    features_df['needs_mentor_attention'] = features_df['fatigue_score'] == -1
     
     # Output some insights
-    risk_count = features_df['is_high_risk'].sum()
-    logger.info(f"Model Training Complete. Identified {risk_count} developers at high risk of burnout.")
+    risk_count = features_df['needs_mentor_attention'].sum()
+    logger.info(f"Model Training Complete. Identified {risk_count} students needing mentor check-ins.")
     
     return model, features_df
 
 def main():
-    logger.info("=== Starting Developer Burnout Predictor Pipeline ===")
+    logger.info("=== Starting Student Fatigue Predictor Pipeline ===")
     conn = None
     try:
         conn = get_snowflake_connection()
@@ -142,10 +142,10 @@ def main():
         logger.info(f"\u2705 Saved trained model to {model_path}")
         
         # Save sample insights for review
-        csv_path = os.path.join(os.path.dirname(__file__), 'burnout_risk_report.csv')
-        high_risk_devs = results_df[results_df['is_high_risk'] == True]
+        csv_path = os.path.join(os.path.dirname(__file__), 'student_fatigue_report.csv')
+        high_risk_devs = results_df[results_df['needs_mentor_attention'] == True]
         high_risk_devs.to_csv(csv_path, index=False)
-        logger.info(f"\u2705 Saved High-Risk Developer report to {csv_path}")
+        logger.info(f"\u2705 Saved Student Attention report to {csv_path}")
 
     except Exception as e:
         logger.critical(f"Pipeline Failed: {e}", exc_info=True)
