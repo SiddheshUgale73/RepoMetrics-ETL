@@ -32,6 +32,7 @@ with tab1:
         
         # High level metrics
         col1, col2, col3 = st.columns(3)
+      
         col1.metric("Active Student Projects", len(repo_df))
         healthy_count = len(repo_df[repo_df['status_grade'].str.contains('A')])
         col2.metric("Excellent Progress Projects", healthy_count)

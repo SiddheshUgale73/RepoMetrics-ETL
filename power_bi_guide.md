@@ -45,3 +45,8 @@ Click **Load**.
 
 ---
 *Note: Your Snowflake account is set to auto-resume the warehouse when queried, ensuring your dashboard stays updated.*
+
+
+
+
+
