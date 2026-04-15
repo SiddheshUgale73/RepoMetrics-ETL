@@ -1,9 +1,9 @@
-# Product Requirements Document: Github Students Insights
+# Product Requirements Document: GitHub Projects Insights
 
 ## 1. Executive Summary
 
 ### 1.1 Product Vision
-**Github Students Insights** is an AI-powered academic project monitoring suite designed to bridge the visibility gap between student coders and their mentors. By transforming raw Git metadata into actionable behavioral insights, the platform ensures objective project evaluation, identifies team imbalances, and proactively detects student burnout.
+**GitHub Projects Insights** is an AI-powered academic project monitoring suite designed to bridge the visibility gap between student coders and their mentors. By transforming raw Git metadata into actionable behavioral insights, the platform ensures objective project evaluation, identifies team imbalances, and proactively detects student burnout.
 
 ### 1.2 Target Audience
 *   **Academic Mentors/Guides**: To track multiple project teams efficiently without manual code reviews.

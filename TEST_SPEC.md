@@ -1,4 +1,4 @@
-# Test Specification: Github Students Insights
+# Test Specification: GitHub Projects Insights
 
 ## 1. Unit Test Specifications
 

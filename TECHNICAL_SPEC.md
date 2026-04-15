@@ -1,4 +1,4 @@
-# Technical Specification: Github Students Insights
+# Technical Specification: GitHub Projects Insights
 
 ## 1. System Components & Specifications
 

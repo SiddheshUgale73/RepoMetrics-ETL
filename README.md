@@ -1,4 +1,4 @@
-# Github Students Insights: AI-Powered Academic Project Monitoring
+# GitHub Projects Insights: AI-Powered Academic Project Monitoring
 
 A high-performance Data Engineering pipeline designed to help **Mentors and Guides** track student project progress by extracting data from GitHub, normalizing it in **Snowflake**, and applying **AI models** to detect fatigue and project momentum.
 
@@ -181,4 +181,4 @@ The project includes a ready-to-use **`snowflake_ddl.sql`** script to set up you
 - `config.py`: Global settings and file paths.
 
 ---
-**Monitor and guide your students effectively with Github Students Insights!**
+**Monitor and guide your students effectively with GitHub Projects Insights!**
