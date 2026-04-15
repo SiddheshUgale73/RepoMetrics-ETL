@@ -1,9 +1,30 @@
+"""
+Data Migration Module: CSV to SQLite
+
+SPECIFICATION REFERENCE: TECHNICAL_SPEC.md § 1.1 (Data Layer Specification)
+TEST SPECIFICATION: TEST_SPEC.md § 2.1 (CSV to Database Migration Flow)
+
+This module implements resumable, robust migration of GitHub data from CSV files
+into SQLite database with strict data sanitization and validation.
+
+Expected Output:
+  - 146,333 commits
+  - 29,875 pull requests
+  - 3,320 repositories
+  - All row counts verified against source CSVs
+
+Spec Compliance Checklist:
+  ✓ Data Sanitization per § 1.1: Whitespace trim, NULL conversion, type coercion
+  ✓ Error Handling per § 2: File not found, schema mismatch, insertion failures
+  ✓ Logging Spec per § 2: INFO (milestone), WARNING (skip), ERROR (fail), CRITICAL (abort)
+"""
+
 from pathlib import Path
 import sqlite3
 import pandas as pd
 import logging
 
-# Configure logging
+# Configure logging (per TECHNICAL_SPEC.md § 2 - Logging Specification)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
