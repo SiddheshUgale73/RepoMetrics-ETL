@@ -2,32 +2,25 @@ import os
 import sys
 import logging
 import pandas as pd
-from dotenv import load_dotenv
-import snowflake.connector
+import sqlite3
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 import joblib
 
-load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("ProjectProgress")
 
-def get_snowflake_connection():
-    sf_user = os.getenv('SNOWFLAKE_USER')
-    sf_password = os.getenv('SNOWFLAKE_PASSWORD')
-    sf_account = os.getenv('SNOWFLAKE_ACCOUNT')
-    return snowflake.connector.connect(
-        user=sf_user, password=sf_password, account=sf_account,
-        warehouse=os.getenv('SNOWFLAKE_WAREHOUSE', 'COMPUTE_WH'),
-        database=os.getenv('SNOWFLAKE_DATABASE', 'GITSTAR_DB'),
-        schema=os.getenv('SNOWFLAKE_SCHEMA', 'PUBLIC')
-    )
+def get_sqlite_connection():
+    db_path = os.path.join(os.path.dirname(__file__), '..', 'repo_metrics.db')
+    if not os.path.exists(db_path):
+        raise FileNotFoundError(f"Database not found: {db_path}")
+    return sqlite3.connect(db_path)
 
 def extract_repo_health_data(conn):
     logger.info("Extracting Repo data to gauge maintenance health...")
     # Get repositories and aggregate commit data directly in SQL
     query = """
-        SELECT 
+        SELECT
             r.ID,
             r.NAME,
             r.STARGAZERS_COUNT,
@@ -38,9 +31,7 @@ def extract_repo_health_data(conn):
         LEFT JOIN COMMITS c ON r.ID = c.REPOSITORY_ID
         GROUP BY r.ID, r.NAME, r.STARGAZERS_COUNT
     """
-    cursor = conn.cursor()
-    cursor.execute(query)
-    df = cursor.fetch_pandas_all()
+    df = pd.read_sql_query(query, conn)
     logger.info(f"Extracted progress indicators for {len(df)} project templates.")
     return df
 
@@ -102,19 +93,19 @@ def main():
     logger.info("=== Starting Project Progress Scorer ===")
     conn = None
     try:
-        conn = get_snowflake_connection()
+        conn = get_sqlite_connection()
         raw_df = extract_repo_health_data(conn)
-        
+
         if raw_df.empty:
             logger.error("No valid Repository data found. Aborting.")
             return
 
         features_df = feature_engineering(raw_df)
         model, scaler, results_df = cluster_repos(features_df)
-        
+
         model_path = os.path.join(os.path.dirname(__file__), 'repo_health_model.joblib')
         joblib.dump({'model': model, 'scaler': scaler}, model_path)
-        
+
         # Save rankings to CSV
         csv_path = os.path.join(os.path.dirname(__file__), 'project_progress_report.csv')
         results_df[['NAME', 'STARGAZERS_COUNT', 'status_grade', 'days_since_active']].sort_values('days_since_active').to_csv(csv_path, index=False)

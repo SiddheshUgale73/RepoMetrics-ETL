@@ -2,53 +2,31 @@ import os
 import sys
 import logging
 import pandas as pd
-from dotenv import load_dotenv
-import snowflake.connector
+import sqlite3
 from sklearn.ensemble import IsolationForest
 import joblib
-
-# Load environment variables
-# We need to look in the parent directory for .env
-load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("StudentActivityPredictor")
 
-def get_snowflake_connection():
-    sf_user = os.getenv('SNOWFLAKE_USER')
-    sf_password = os.getenv('SNOWFLAKE_PASSWORD')
-    sf_account = os.getenv('SNOWFLAKE_ACCOUNT')
-    sf_warehouse = os.getenv('SNOWFLAKE_WAREHOUSE', 'COMPUTE_WH')
-    sf_database = os.getenv('SNOWFLAKE_DATABASE', 'GITSTAR_DB')
-    sf_schema = os.getenv('SNOWFLAKE_SCHEMA', 'PUBLIC')
-
-    if not all([sf_user, sf_password, sf_account]):
-        raise ValueError("Missing Snowflake credentials in .env file.")
-
-    return snowflake.connector.connect(
-        user=sf_user,
-        password=sf_password,
-        account=sf_account,
-        warehouse=sf_warehouse,
-        database=sf_database,
-        schema=sf_schema
-    )
+def get_sqlite_connection():
+    db_path = os.path.join(os.path.dirname(__file__), '..', 'repo_metrics.db')
+    if not os.path.exists(db_path):
+        raise FileNotFoundError(f"Database not found: {db_path}")
+    return sqlite3.connect(db_path)
 
 def extract_commit_data(conn):
-    """Extract commit history from Snowflake to calculate developer activity patterns."""
-    logger.info("Extracting Commits and Authors from Snowflake...")
+    """Extract commit history from SQLite to calculate developer activity patterns."""
+    logger.info("Extracting Commits and Authors from SQLite...")
     query = """
-        SELECT 
+        SELECT
             c.SHA,
             c.COMMIT_DATE,
             a.NAME as AUTHOR_NAME
         FROM COMMITS c
         JOIN AUTHORS a ON c.AUTHOR_ID = a.ID
     """
-    cursor = conn.cursor()
-    cursor.execute(query)
-    # Fetch as pandas DataFrame
-    df = cursor.fetch_pandas_all()
+    df = pd.read_sql_query(query, conn)
     logger.info(f"Extracted {len(df)} commits.")
     return df
 
@@ -120,27 +98,27 @@ def main():
     logger.info("=== Starting Student Fatigue Predictor Pipeline ===")
     conn = None
     try:
-        conn = get_snowflake_connection()
-        
+        conn = get_sqlite_connection()
+
         # 1. Extract
         raw_df = extract_commit_data(conn)
-        
+
         if raw_df.empty:
-            logger.error("No commit data found in Snowflake. Pipeline aborted.")
+            logger.error("No commit data found in SQLite. Pipeline aborted.")
             return
 
         # 2. Transform
         author_features = feature_engineering(raw_df)
-        
+
         # 3. Model
         model, results_df = train_burnout_model(author_features)
-        
+
         # 4. Save Artifacts
         os.makedirs(os.path.dirname(__file__), exist_ok=True)
         model_path = os.path.join(os.path.dirname(__file__), 'burnout_model.joblib')
         joblib.dump(model, model_path)
         logger.info(f"\u2705 Saved trained model to {model_path}")
-        
+
         # Save sample insights for review
         csv_path = os.path.join(os.path.dirname(__file__), 'student_fatigue_report.csv')
         high_risk_devs = results_df[results_df['needs_mentor_attention'] == True]

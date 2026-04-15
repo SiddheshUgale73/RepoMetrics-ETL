@@ -3,33 +3,26 @@ import sys
 import logging
 import pandas as pd
 import numpy as np
-from dotenv import load_dotenv
-import snowflake.connector
+import sqlite3
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, r2_score
 import joblib
 
-load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("SubmissionPredictor")
 
-def get_snowflake_connection():
-    sf_user = os.getenv('SNOWFLAKE_USER')
-    sf_password = os.getenv('SNOWFLAKE_PASSWORD')
-    sf_account = os.getenv('SNOWFLAKE_ACCOUNT')
-    return snowflake.connector.connect(
-        user=sf_user, password=sf_password, account=sf_account,
-        warehouse=os.getenv('SNOWFLAKE_WAREHOUSE', 'COMPUTE_WH'),
-        database=os.getenv('SNOWFLAKE_DATABASE', 'GITSTAR_DB'),
-        schema=os.getenv('SNOWFLAKE_SCHEMA', 'PUBLIC')
-    )
+def get_sqlite_connection():
+    db_path = os.path.join(os.path.dirname(__file__), '..', 'repo_metrics.db')
+    if not os.path.exists(db_path):
+        raise FileNotFoundError(f"Database not found: {db_path}")
+    return sqlite3.connect(db_path)
 
 def extract_pr_data(conn):
-    logger.info("Extracting submission history from Snowflake...")
+    logger.info("Extracting submission history from SQLite...")
     # Only pull merged PRs to train the predictive model
     query = """
-        SELECT 
+        SELECT
             PR_NUMBER,
             TITLE,
             CREATED_AT,
@@ -39,9 +32,7 @@ def extract_pr_data(conn):
         FROM PULL_REQUESTS
         WHERE STATE = 'closed' AND MERGED_AT IS NOT NULL
     """
-    cursor = conn.cursor()
-    cursor.execute(query)
-    df = cursor.fetch_pandas_all()
+    df = pd.read_sql_query(query, conn)
     logger.info(f"Extracted {len(df)} merged Pull Requests.")
     return df
 
@@ -97,16 +88,16 @@ def main():
     logger.info("=== Starting Student Submission Predictor ===")
     conn = None
     try:
-        conn = get_snowflake_connection()
+        conn = get_sqlite_connection()
         raw_df = extract_pr_data(conn)
-        
+
         if raw_df.empty:
             logger.error("No valid PR data found. Aborting.")
             return
 
         features_df = feature_engineering(raw_df)
         model, data = train_pr_model(features_df)
-        
+
         if model:
             model_path = os.path.join(os.path.dirname(__file__), 'pr_bottleneck_model.joblib')
             joblib.dump(model, model_path)
