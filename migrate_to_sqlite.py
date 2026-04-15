@@ -91,19 +91,25 @@ def load_csv_to_table(conn: sqlite3.Connection, table_name: str, csv_path: Path)
     if not table_columns:
         raise ValueError(f"No schema defined for table {table_name}")
 
-    available_columns = [col for col in table_columns if col in df.columns]
-    if not available_columns:
+    lower_table_columns = {col.lower(): col for col in table_columns}
+    lower_df_columns = {col.lower(): col for col in df.columns}
+
+    matched_columns = [lower_df_columns[col] for col in lower_table_columns if col in lower_df_columns]
+    if not matched_columns:
         raise ValueError(
             f"CSV file {csv_path.name} does not contain any columns matching table {table_name}"
         )
 
-    missing_columns = [col for col in table_columns if col not in df.columns]
-    for column_name in missing_columns:
-        df[column_name] = None
+    aligned_df = pd.DataFrame()
+    for target_column in table_columns:
+        source_key = target_column.lower()
+        if source_key in lower_df_columns:
+            aligned_df[target_column] = df[lower_df_columns[source_key]]
+        else:
+            aligned_df[target_column] = None
 
-    df = df[table_columns]
-    df.to_sql(table_name, conn, if_exists="append", index=False, method="multi")
-    return len(df)
+    aligned_df.to_sql(table_name, conn, if_exists="append", index=False, method="multi")
+    return len(aligned_df)
 
 
 def migrate() -> None:
