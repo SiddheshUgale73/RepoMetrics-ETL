@@ -119,6 +119,10 @@ def migrate() -> None:
         return
 
     try:
+        if DB_NAME.exists():
+            logger.info("Existing database found, recreating fresh copy: %s", DB_NAME)
+            DB_NAME.unlink()
+
         with sqlite3.connect(DB_NAME) as conn:
             conn.execute("PRAGMA foreign_keys = ON")
             logger.info("Initializing SQLite database: %s", DB_NAME)
