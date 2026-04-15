@@ -108,7 +108,15 @@ def load_csv_to_table(conn: sqlite3.Connection, table_name: str, csv_path: Path)
         else:
             aligned_df[target_column] = None
 
-    aligned_df.to_sql(table_name, conn, if_exists="append", index=False, method="multi")
+    chunk_size = max(1, 500 // max(1, len(table_columns)))
+    aligned_df.to_sql(
+        table_name,
+        conn,
+        if_exists="append",
+        index=False,
+        chunksize=chunk_size,
+        method="multi",
+    )
     return len(aligned_df)
 
 
