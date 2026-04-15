@@ -1,3 +1,36 @@
+"""
+Project Health Scorer: Repository Status Clustering
+
+SPECIFICATION REFERENCE: TECHNICAL_SPEC.md § 1.2.3 (Project Health Clustering)
+TEST SPECIFICATION: TEST_SPEC.md § 2.2-C (Integration Test)
+
+Algorithm: K-Means Clustering (k=4, random_state=42)
+Purpose: Automatically grade repositories from A (Excellent) to F (Stalled)
+
+Input Data Contract:
+  - REPOSITORIES: 3,320 rows with star count, language, owner
+  - COMMITS: Aggregated per repository (total_commits, unique_contributors)
+  - Features: Days since last active commit
+
+Cluster Mapping (per § 1.2.3):
+  - Cluster 0 → A (Excellent Progress): ~12 repos (~0.4%)
+  - Cluster 1 → B (Good Progress): ~1415 repos (~42.6%)
+  - Cluster 2 → C (Slow / At Risk): ~1008 repos (~30.4%)
+  - Cluster 3 → D/F (Stalled / Needs Review): ~867 repos (~26.1%)
+
+Output Artifacts:
+  - ml/repo_health_model.joblib (trained K-Means + StandardScaler)
+  - ml/project_progress_report.csv (per-repo grades, sorted by inactivity)
+
+Dashboard Integration (§ 1.3.1):
+  - Used in Tab 1: Project Progress Grades
+  - Displays metrics: total projects, excellent projects, stalled projects
+  - Supports search by repository name
+  
+Validation (TEST_SPEC.md § 3.2-B):
+  - Grade distribution matches expected percentages (±10% tolerance)
+"""
+
 import os
 import sys
 import logging

@@ -1,10 +1,49 @@
+"""
+Academic Project Mentor Dashboard: Mentor Support Interface
+
+SPECIFICATION REFERENCE: TECHNICAL_SPEC.md § 1.3 (Dashboard Specification)
+TEST SPECIFICATION: TEST_SPEC.md § 2.3 (Dashboard Data Loading Test)
+
+Framework: Streamlit
+URL: http://localhost:8501
+Layout: Wide, with multiple tabs for different mentor workflows
+
+Tab Structure (per § 1.3):
+  1. Tab 1 - Project Progress Grades (§ 1.3.1)
+     • Data Source: ml/project_progress_report.csv
+     • Metrics: Total projects, excellent progress count, stalled count
+     • Interaction: Search repositories by name
+     • Success: All metrics display correctly, search works case-insensitive
+
+  2. Tab 2 - Student Fatigue Alerts (§ 1.3.2)
+     • Data Source: ml/student_fatigue_report.csv
+     • Display: High-risk developers list (flagged by burnout model)
+     • Success: Only flagged students shown, columns correct
+
+  3. Tab 3 - Submission Timeline Predictor (§ 1.3.3)
+     • Data Source: ml/pr_bottleneck_model.joblib (trained model)
+     • Form Inputs: PR title, creation hour, submission date
+     • Output: Predicted days to merge PR
+     • Success: Model inference <1 second, error handling for invalid inputs
+
+  4. Tab 4 - Mentor Strategy Insights (§ 1.3.4)
+     • Data Source: ml/advanced_insights.csv
+     • Visualizations: Collaboration scores, bus factor warnings, velocity
+     • Success: Charts render without errors, key metrics highlighted
+
+Data Loading Validation (TEST_SPEC.md § 2.3):
+  - All CSV files accessible and readable
+  - All required columns present
+  - Model files loadable without error
+"""
+
 import streamlit as st
 import pandas as pd
 import joblib
 import os
 import matplotlib.pyplot as plt
 
-# Page Config
+# Page Config (per TECHNICAL_SPEC.md § 1.3)
 st.set_page_config(page_title="Academic Project Mentor", page_icon="🎓", layout="wide")
 
 # Paths to the ML artifacts we generated in Step 2

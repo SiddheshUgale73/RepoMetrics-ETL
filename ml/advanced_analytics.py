@@ -1,9 +1,42 @@
+"""
+Advanced Analytics: Collaboration & Team Dynamics
+
+SPECIFICATION REFERENCE: TECHNICAL_SPEC.md § 1.2.4 (Advanced Analytics)
+TEST SPECIFICATION: TEST_SPEC.md § 2.2-D (Integration Test)
+
+Purpose: Calculate strategic mentor insights including collaboration scores
+and team dynamics metrics for academic project evaluation.
+
+Input Data Contract:
+  - COMMITS: ~146,333 commit records
+  - REPOSITORIES: ~3,320 project repositories
+  - AUTHORS: ~15,661 unique git authors
+
+Metrics Calculated (per § 1.2.4):
+  - collaboration_score: Number of contributors to reach >50% of commits
+    • Formula: Count distinct authors where cumsum(commits) <= 50%
+    • Higher = better work distribution
+  - bus_factor: Size of critical knowledge silo (1 = danger)
+  - velocity: Commits per active day per contributor
+
+Output Data Contract:
+  - Per-repository aggregated metrics
+  - Collaboration score > 0 for all repos
+  
+Output Artifacts:
+  - ml/advanced_insights.csv (strategic insights for mentors)
+
+Dashboard Integration (§ 1.3.4):
+  - Used in Tab 4: Mentor Strategy Insights
+  - Displays: Top collaborators, bus factor warnings, team velocity
+"""
+
 import pandas as pd
 import os
 import logging
 from datetime import datetime
 
-# Set up logging
+# Set up logging (per TECHNICAL_SPEC.md § 2 - Logging Specification)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("MentorInsights")
 

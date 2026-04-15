@@ -1,3 +1,36 @@
+"""
+Burnout Detection Model: Student Fatigue Predictor
+
+SPECIFICATION REFERENCE: TECHNICAL_SPEC.md § 1.2.1 (Burnout Detection Model)
+TEST SPECIFICATION: TEST_SPEC.md § 1.4, § 2.2-A (Model Output & Integration Tests)
+
+Algorithm: Isolation Forest (Unsupervised Anomaly Detection)
+Contamination Rate: 5% (identifies top behavioral outliers)
+
+Input Data Contract:
+  - COMMITS: 146,333 rows with SHA, COMMIT_DATE, AUTHOR_ID
+  - AUTHORS: 15,661 rows with ID, NAME
+  
+Feature Engineering (per § 1.2.1):
+  - is_weekend: Commits on Sat(5) or Sun(6)
+  - is_late_night: Commits between 10 PM - 4 AM
+  - weekend_ratio: weekend_commits / total_commits (0.0-1.0)
+  - late_night_ratio: late_night_commits / total_commits (0.0-1.0)
+  - commits_per_day: total_commits / active_days
+
+Output Data Contract:
+  - Authors with >10 commits only (core contributors filter)
+  - fatigue_score: -1 (anomaly/burnout risk), 1 (normal)
+  - needs_mentor_attention: Boolean flag for flagged students
+
+Expected Results (Validation per TEST_SPEC.md § 3.2-A):
+  - ~89 flagged students (±10%) out of 1783 core developers
+  
+Artifacts Generated:
+  - ml/burnout_model.joblib (trained model for reuse)
+  - ml/student_fatigue_report.csv (high-risk students list)
+"""
+
 import os
 import sys
 import logging
