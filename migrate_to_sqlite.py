@@ -109,15 +109,19 @@ def load_csv_to_table(conn: sqlite3.Connection, table_name: str, csv_path: Path)
             aligned_df[target_column] = None
 
     chunk_size = max(1, 500 // max(1, len(table_columns)))
-    aligned_df.to_sql(
-        table_name,
-        conn,
-        if_exists="append",
-        index=False,
-        chunksize=chunk_size,
-        method="multi",
-    )
-    return len(aligned_df)
+    insert_sql = \
+        f"INSERT OR IGNORE INTO {table_name} ({', '.join(table_columns)}) VALUES ({', '.join('?' for _ in table_columns)})"
+    values = [tuple(row) for row in aligned_df.itertuples(index=False, name=None)]
+    chunk_size = max(1, 500 // max(1, len(table_columns)))
+
+    cursor.executemany(insert_sql, values[:chunk_size])
+    conn.commit()
+
+    for start in range(chunk_size, len(values), chunk_size):
+        cursor.executemany(insert_sql, values[start : start + chunk_size])
+        conn.commit()
+
+    return len(values)
 
 
 def migrate() -> None:
